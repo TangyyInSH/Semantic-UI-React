@@ -6,6 +6,11 @@ import ExampleSection from 'docs/src/components/ComponentDoc/ExampleSection'
 const SearchTypesExamples = () => (
   <ExampleSection title='Types'>
     <ComponentExample
+      title='Category Multi'
+      description='Allow multiple selection'
+      examplePath='modules/Search/Types/SearchExampleCategoryMulti'
+    />
+    <ComponentExample
       title='Standard'
       description='A search can display a set of results.'
       examplePath='modules/Search/Types/SearchExampleStandard'

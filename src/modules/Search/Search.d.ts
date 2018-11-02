@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { LabelProps } from '../../elements/Label'
 import { SemanticShorthandItem } from '../../generic'
 import { InputProps } from '../../elements/Input'
 import { default as SearchCategory, SearchCategoryProps } from './SearchCategory'
@@ -55,6 +56,9 @@ export interface StrictSearchProps {
   /** Current value of the search input. Creates a controlled component. */
   value?: string
 
+  /** Current value of selected search result. Only enable in multiple mode. */
+  selectedValue?: any[]
+
   // ------------------------------------
   // Rendering
   // ------------------------------------
@@ -74,6 +78,17 @@ export interface StrictSearchProps {
    * @returns {*} - Renderable SearchResult contents.
    */
   resultRenderer?: (props: SearchResultProps) => React.ReactElement<any>
+
+  /**
+   * Mapped over the active items and returns shorthand for the active item Labels.
+   * Only applies to `multiple` Dropdowns.
+   *
+   * @param {object} item - A currently active dropdown item.
+   * @param {number} index - The current index.
+   * @param {object} defaultLabelProps - The default props for an active item Label.
+   * @returns {*} Shorthand for a Label.
+   */
+  renderLabel?: (item: SearchResultProps, index: number, defaultLabelProps: LabelProps) => any
 
   // ------------------------------------
   // Callbacks

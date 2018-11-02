@@ -21,9 +21,12 @@ import {
   useValueAndKey,
 } from '../../lib'
 import Input from '../../elements/Input'
+import Label from '../../elements/Label'
 import SearchCategory from './SearchCategory'
 import SearchResult from './SearchResult'
 import SearchResults from './SearchResults'
+
+const getIdOrTitle = (id, title) => (_.isNil(id) ? id : title)
 
 const debug = makeDebugger('search')
 
@@ -44,6 +47,9 @@ export default class Search extends Component {
 
     /** Initial value. */
     defaultValue: PropTypes.string,
+
+    /** Initial value of selectedValue. */
+    defaultSelectedValue: PropTypes.arrayOf(PropTypes.shape(SearchResult.propTypes)),
 
     /** Shorthand for Icon. */
     icon: PropTypes.oneOfType([PropTypes.node, PropTypes.object]),
@@ -78,6 +84,21 @@ export default class Search extends Component {
 
     /** Current value of the search input. Creates a controlled component. */
     value: PropTypes.string,
+
+    /** Enable multi selection */
+    multiple: PropTypes.bool,
+
+    /** When multi selected, store the selected value */
+    selectedValue: customPropTypes.every([
+      customPropTypes.demand(['multiple']),
+      PropTypes.arrayOf(PropTypes.shape(SearchResult.propTypes)),
+    ]),
+
+    /** current selected label */
+    selectedLabel: customPropTypes.every([
+      customPropTypes.demand(['multiple']),
+      PropTypes.shape(SearchResult.propTypes),
+    ]),
 
     // ------------------------------------
     // Rendering
@@ -151,6 +172,17 @@ export default class Search extends Component {
      */
     onSelectionChange: PropTypes.func,
 
+    /**
+     * Mapped over the active items and returns shorthand for the active item Labels.
+     * Only applies to `multiple` Search.
+     *
+     * @param {object} item - A currently active dropdown item.
+     * @param {number} index - The current index.
+     * @param {object} defaultLabelProps - The default props for an active item Label.
+     * @returns {*} Shorthand for a Label.
+     */
+    renderLabel: PropTypes.func,
+
     // ------------------------------------
     // Style
     // ------------------------------------
@@ -183,9 +215,10 @@ export default class Search extends Component {
     minCharacters: 1,
     noResultsMessage: 'No results found.',
     showNoResults: true,
+    renderLabel: ({ title }) => title,
   }
 
-  static autoControlledProps = ['open', 'value']
+  static autoControlledProps = ['open', 'value', 'selectedValue']
 
   static Category = SearchCategory
   static Result = SearchResult
@@ -280,6 +313,15 @@ export default class Search extends Component {
     debug(result)
 
     _.invoke(this.props, 'onResultSelect', e, { ...this.props, result })
+
+    const { multiple } = this.props
+    if (!multiple) return
+
+    const newSelectedValue = _.union(this.state.selectedValue, [result])
+    this.setState({ selectedValue: newSelectedValue })
+
+    eventStack.unsub('click', this.closeOnDocumentClick)
+    debug('handleResultSelect-Multiple')
   }
 
   handleSelectionChange = (e) => {
@@ -413,6 +455,25 @@ export default class Search extends Component {
     this.setValue(newQuery)
   }
 
+  handleLabelClick = (e, labelProps) => {
+    debug('handleLabelClick()')
+    // prevent focusing search input on click
+    e.stopPropagation()
+
+    this.setState({ selectedLabel: labelProps.value })
+    _.invoke(this.props, 'onLabelClick', e, labelProps)
+  }
+
+  handleLabelRemove = (e, labelProps) => {
+    debug('handleLabelRemove()')
+    // prevent focusing search input on click
+    e.stopPropagation()
+    const { selectedValue } = this.state
+    const newValue = _.without(selectedValue, labelProps.value)
+
+    this.setState({ selectedValue: newValue })
+  }
+
   // ----------------------------------------
   // Getters
   // ----------------------------------------
@@ -523,6 +584,29 @@ export default class Search extends Component {
         onClick: this.handleInputClick,
         value,
       },
+    })
+  }
+
+  renderLabels = () => {
+    debug('renderLabels()')
+    const { multiple, renderLabel } = this.props
+    const { selectedValue, selectedLabel } = this.state
+    if (!multiple || _.isEmpty(selectedValue)) {
+      return
+    }
+
+    const selectedItems = _.map(selectedValue, this.getItembyValue)
+    return _.map(_.compact(selectedItems), (item, index) => {
+      const defaultProps = {
+        active: item === selectedLabel,
+        as: 'a',
+        key: getIdOrTitle(item.id, item.title),
+        onClick: this.handleLabelClick,
+        onRemove: this.handleLabelRemove,
+        value: item.title,
+      }
+
+      return Label.create(renderLabel(item, index, defaultProps), { defaultProps })
     })
   }
 
@@ -642,6 +726,7 @@ export default class Search extends Component {
         onFocus={this.handleFocus}
         onMouseDown={this.handleMouseDown}
       >
+        {this.renderLabels()}
         {this.renderSearchInput(htmlInputProps)}
         {this.renderResultsMenu()}
       </ElementType>
