@@ -19,6 +19,14 @@ import Icon from '../../elements/Icon'
 // Note: To avoid requiring a wrapping div, we return an array here so to
 // prevent rendering issues each node needs a unique key.
 const defaultRenderer = ({ image, price, title, description, selected }) => [
+  selected && (
+    <Icon
+      name='check'
+      color='green'
+      className='selected'
+      style={{ display: 'inline', float: 'right' }}
+    />
+  ),
   image && (
     <div key='image' className='image'>
       {createHTMLImage(image, { autoGenerateKey: false })}
@@ -28,7 +36,6 @@ const defaultRenderer = ({ image, price, title, description, selected }) => [
     {price && <div className='price'>{price}</div>}
     {title && <div className='title'>{title}</div>}
     {description && <div className='description'>{description}</div>}
-    {selected && <Icon name='check' className='selected' />}
   </div>,
 ]
 

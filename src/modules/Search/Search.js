@@ -22,6 +22,7 @@ import {
 } from '../../lib'
 import Input from '../../elements/Input'
 import Label from '../../elements/Label'
+import Icon from '../../elements/Icon'
 import SearchCategory from './SearchCategory'
 import SearchResult from './SearchResult'
 import SearchResults from './SearchResults'
@@ -362,6 +363,13 @@ export default class Search extends Component {
     this.setState({ selectedValue: newSelectedValue })
   }
 
+  handleResultRemoveAll = () => {
+    debug('handleResultRemoveAll()')
+    const { selectedValue } = this.state
+    _.forEach(selectedValue, v => this.resetResultFlag(v, false))
+    this.setState({ selectedValue: [] })
+  }
+
   handleSelectionChange = (e) => {
     debug('handleSelectionChange()')
 
@@ -648,6 +656,19 @@ export default class Search extends Component {
     })
   }
 
+  renderRemoveButton = () => {
+    debug('renderRemoveButton')
+
+    const { multiple } = this.props
+    const { selectedValue } = this.state
+
+    if (!multiple || _.isEmpty(selectedValue)) {
+      return
+    }
+
+    return <Icon circular name='remove' onClick={this.handleResultRemoveAll} />
+  }
+
   renderNoResults = () => {
     const { noResultsDescription, noResultsMessage } = this.props
 
@@ -765,6 +786,7 @@ export default class Search extends Component {
         onMouseDown={this.handleMouseDown}
       >
         {this.renderLabels()}
+        {this.renderRemoveButton()}
         {this.renderSearchInput(htmlInputProps)}
         {this.renderResultsMenu()}
       </ElementType>
