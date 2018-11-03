@@ -331,10 +331,35 @@ export default class Search extends Component {
     const { multiple } = this.props
     if (!multiple) return
 
-    const newSelectedValue = _.union(this.state.selectedValue, [result])
-    this.setState({ selectedValue: newSelectedValue })
+    if (result.selected) {
+      this.handleResultRemove(result)
+    } else {
+      this.handleResultAdd(result)
+    }
 
     this.tryOpen()
+  }
+
+  resetResultFlag = (result, flag) => {
+    const results = this.getFlattenedResults()
+    const newResult = result
+    newResult.selected = flag
+    _.set(results, this.state.selectedIndex, newResult)
+    this.setState({ results })
+  }
+
+  handleResultAdd = (result) => {
+    debug('handleResultAdd()')
+    this.resetResultFlag(result, true)
+    const newSelectedValue = _.union(this.state.selectedValue, [result])
+    this.setState({ selectedValue: newSelectedValue })
+  }
+
+  handleResultRemove = (result) => {
+    debug('handleResultRemove()')
+    this.resetResultFlag(result, false)
+    const newSelectedValue = _.without(this.state.selectedValue, result)
+    this.setState({ selectedValue: newSelectedValue })
   }
 
   handleSelectionChange = (e) => {
@@ -484,10 +509,7 @@ export default class Search extends Component {
     debug('handleLabelRemove()')
     // prevent focusing search input on click
     e.stopPropagation()
-    const { selectedValue } = this.state
-    const newValue = _.filter(selectedValue, sv => sv.title !== labelProps.value)
-
-    this.setState({ selectedValue: newValue })
+    this.handleResultRemove(labelProps.value)
   }
 
   // ----------------------------------------
@@ -619,7 +641,7 @@ export default class Search extends Component {
         key: getIdOrTitle(item.id, item.title),
         onClick: this.handleLabelClick,
         onRemove: this.handleLabelRemove,
-        value: item.title,
+        value: item,
       }
 
       return Label.create(renderLabel(item, index, defaultProps), { defaultProps })

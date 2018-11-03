@@ -9,6 +9,7 @@ import {
   getUnhandledProps,
   useKeyOnly,
 } from '../../lib'
+import Icon from '../../elements/Icon'
 
 // Note: You technically only need the 'content' wrapper when there's an
 // image. However, optionally wrapping it makes this function a lot more
@@ -17,7 +18,7 @@ import {
 //
 // Note: To avoid requiring a wrapping div, we return an array here so to
 // prevent rendering issues each node needs a unique key.
-const defaultRenderer = ({ image, price, title, description }) => [
+const defaultRenderer = ({ image, price, title, description, selected }) => [
   image && (
     <div key='image' className='image'>
       {createHTMLImage(image, { autoGenerateKey: false })}
@@ -27,6 +28,7 @@ const defaultRenderer = ({ image, price, title, description }) => [
     {price && <div className='price'>{price}</div>}
     {title && <div className='title'>{title}</div>}
     {description && <div className='description'>{description}</div>}
+    {selected && <Icon name='check' className='selected' />}
   </div>,
 ]
 
@@ -74,6 +76,8 @@ export default class SearchResult extends Component {
 
     /** Display title. */
     title: PropTypes.string.isRequired,
+
+    selected: PropTypes.bool,
   }
 
   static defaultProps = {
