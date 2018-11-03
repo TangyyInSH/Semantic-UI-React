@@ -42,6 +42,13 @@ export default class Search extends Component {
     // Behavior
     // ------------------------------------
 
+    /**
+     * Whether or not the menu should close when a value is selected from the dropdown.
+     * By default, multiple selection dropdowns will remain open on change, while single
+     * selection dropdowns will close on change.
+     */
+    closeOnChange: PropTypes.bool,
+
     /** Initial value of open. */
     defaultOpen: PropTypes.bool,
 
@@ -304,6 +311,13 @@ export default class Search extends Component {
     ])
   }
 
+  closeOnChange = (e) => {
+    const { closeOnChange, multiple } = this.props
+    const shouldClose = _.isUndefined(closeOnChange) ? !multiple : closeOnChange
+
+    if (shouldClose) this.close(e)
+  }
+
   // ----------------------------------------
   // Document Event Handlers
   // ----------------------------------------
@@ -320,8 +334,7 @@ export default class Search extends Component {
     const newSelectedValue = _.union(this.state.selectedValue, [result])
     this.setState({ selectedValue: newSelectedValue })
 
-    eventStack.unsub('click', this.closeOnDocumentClick)
-    debug('handleResultSelect-Multiple')
+    this.tryOpen()
   }
 
   handleSelectionChange = (e) => {
@@ -367,14 +380,16 @@ export default class Search extends Component {
     e.preventDefault()
 
     // notify the onResultSelect prop that the user is trying to change value
-    this.setValue(result.title)
+    const { multiple } = this.props
+    if (!multiple) this.setValue(result.title)
     this.handleResultSelect(e, result)
-    this.close()
+    this.closeOnChange(e)
   }
 
   closeOnDocumentClick = (e) => {
     debug('closeOnDocumentClick()')
     debug(e)
+
     this.close()
   }
 
@@ -413,11 +428,12 @@ export default class Search extends Component {
 
     // prevent closeOnDocumentClick()
     e.nativeEvent.stopImmediatePropagation()
+    const { multiple } = this.props
 
     // notify the onResultSelect prop that the user is trying to change value
-    this.setValue(result.title)
+    if (!multiple) this.setValue(result.title)
     this.handleResultSelect(e, result)
-    this.close()
+    this.closeOnChange(e)
   }
 
   handleFocus = (e) => {
@@ -469,7 +485,7 @@ export default class Search extends Component {
     // prevent focusing search input on click
     e.stopPropagation()
     const { selectedValue } = this.state
-    const newValue = _.without(selectedValue, labelProps.value)
+    const newValue = _.filter(selectedValue, sv => sv.title !== labelProps.value)
 
     this.setState({ selectedValue: newValue })
   }

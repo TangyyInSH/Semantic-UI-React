@@ -30,8 +30,6 @@ export default class SearchExampleCategoryMulti extends Component {
 
   resetComponent = () => this.setState({ isLoading: false, results: [], value: '' })
 
-  handleResultSelect = (e, { result }) => this.setState({ value: result.title })
-
   handleSearchChange = (e, { value }) => {
     this.setState({ isLoading: true, value })
 
@@ -68,7 +66,6 @@ export default class SearchExampleCategoryMulti extends Component {
           <Search
             category
             loading={isLoading}
-            onResultSelect={this.handleResultSelect}
             onSearchChange={_.debounce(this.handleSearchChange, 500, { leading: true })}
             results={results}
             value={value}
