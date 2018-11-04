@@ -24,6 +24,7 @@ const defaultRenderer = ({ image, price, title, description, selected }) => [
       name='check'
       color='green'
       className='selected'
+      key='flag'
       style={{ display: 'inline', float: 'right' }}
     />
   ),
@@ -84,6 +85,7 @@ export default class SearchResult extends Component {
     /** Display title. */
     title: PropTypes.string.isRequired,
 
+    /** Indicate this result is selected or not. Only apply in multiple mode */
     selected: PropTypes.bool,
   }
 
