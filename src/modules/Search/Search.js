@@ -8,6 +8,7 @@ import {
   AutoControlledComponent as Component,
   customPropTypes,
   eventStack,
+  doesNodeContainClick,
   getElementType,
   getUnhandledProps,
   htmlInputAttrs,
@@ -228,6 +229,10 @@ export default class Search extends Component {
 
   static autoControlledProps = ['open', 'value', 'selectedValue']
 
+  handleRef = c => (this.ref = c)
+  handleResultMenuRef = c => (this.resultMenuRef = c)
+  handleInputRef = c => (this.inputRef = c)
+
   static Category = SearchCategory
   static Result = SearchResult
   static Results = SearchResults
@@ -291,7 +296,7 @@ export default class Search extends Component {
       ])
     } else if (prevState.open && !this.state.open) {
       debug('search closed')
-      this.close()
+      this.handleClose()
       eventStack.unsub('click', this.closeOnDocumentClick)
       eventStack.unsub('keydown', [
         this.closeOnEscape,
@@ -319,6 +324,20 @@ export default class Search extends Component {
     if (shouldClose) this.close(e)
   }
 
+  handleClose = () => {
+    debug('handleClose()')
+
+    const hasResultMenuFoucs = document.activeElement === this.resultMenuRef
+    const hasInputFocus = document.activeElement === this.ref
+    const hasFocus = hasResultMenuFoucs || hasInputFocus
+
+    if (!hasResultMenuFoucs) {
+      this.ref.blur()
+    }
+
+    this.setState({ focus: hasFocus })
+  }
+
   // ----------------------------------------
   // Document Event Handlers
   // ----------------------------------------
@@ -337,8 +356,6 @@ export default class Search extends Component {
     } else {
       this.handleResultAdd(result)
     }
-
-    this.tryOpen()
   }
 
   resetResultFlag = (result, flag) => {
@@ -423,6 +440,7 @@ export default class Search extends Component {
     debug('closeOnDocumentClick()')
     debug(e)
 
+    if (this.ref && doesNodeContainClick(this.ref, e)) return
     this.close()
   }
 
@@ -629,6 +647,7 @@ export default class Search extends Component {
         onChange: this.handleSearchChange,
         onClick: this.handleInputClick,
         value,
+        ref: this.handleInputRef,
       },
     })
   }
@@ -746,7 +765,11 @@ export default class Search extends Component {
 
     if (!menuContent) return
 
-    return <SearchResults className={resultsClasses}>{menuContent}</SearchResults>
+    return (
+      <SearchResults className={resultsClasses} ref={this.handleResultMenuRef}>
+        {menuContent}
+      </SearchResults>
+    )
   }
 
   render() {
@@ -784,6 +807,7 @@ export default class Search extends Component {
         onBlur={this.handleBlur}
         onFocus={this.handleFocus}
         onMouseDown={this.handleMouseDown}
+        ref={this.handleRef}
       >
         {this.renderLabels()}
         {this.renderRemoveButton()}
