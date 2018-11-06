@@ -232,6 +232,7 @@ export default class Search extends Component {
   handleRef = c => (this.ref = c)
   handleResultMenuRef = c => (this.resultMenuRef = c)
   handleInputRef = c => (this.inputRef = c)
+  handleSizerRef = c => (this.sizerRef = c)
 
   static Category = SearchCategory
   static Result = SearchResult
@@ -648,6 +649,7 @@ export default class Search extends Component {
         onClick: this.handleInputClick,
         value,
         ref: this.handleInputRef,
+        style: { width: this.computeSearchInputWidth() },
       },
     })
   }
@@ -770,6 +772,25 @@ export default class Search extends Component {
         {menuContent}
       </SearchResults>
     )
+  }
+
+  renderSearchSizer = () => {
+    const { multiple } = this.props
+
+    if (!multiple) return null
+    return <span className='sizer' ref={this.handleSizerRef} />
+  }
+
+  computeSearchInputWidth = () => {
+    const { value } = this.state
+    if (this.sizerRef) {
+      this.sizerRef.style.display = 'inline'
+      this.sizerRef.textContent = value
+      const searchWidth = Math.ceil(this.sizerRef.getBoundingClientRect().width)
+      this.sizerRef.state.removeProperty('display')
+
+      return searchWidth
+    }
   }
 
   render() {
