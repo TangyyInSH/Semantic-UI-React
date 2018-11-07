@@ -230,7 +230,6 @@ export default class Search extends Component {
   static autoControlledProps = ['open', 'value', 'selectedValue']
 
   handleRef = c => (this.ref = c)
-  handleResultMenuRef = c => (this.resultMenuRef = c)
   handleInputRef = c => (this.inputRef = c)
   handleSizerRef = c => (this.sizerRef = c)
 
@@ -328,13 +327,9 @@ export default class Search extends Component {
   handleClose = () => {
     debug('handleClose()')
 
-    const hasResultMenuFoucs = document.activeElement === this.resultMenuRef
-    const hasInputFocus = document.activeElement === this.ref
-    const hasFocus = hasResultMenuFoucs || hasInputFocus
+    const hasFocus = document.activeElement === this.ref
 
-    if (!hasResultMenuFoucs) {
-      this.ref.blur()
-    }
+    this.ref.blur()
 
     this.setState({ focus: hasFocus })
   }
@@ -767,11 +762,7 @@ export default class Search extends Component {
 
     if (!menuContent) return
 
-    return (
-      <SearchResults className={resultsClasses} ref={this.handleResultMenuRef}>
-        {menuContent}
-      </SearchResults>
-    )
+    return <SearchResults className={resultsClasses}>{menuContent}</SearchResults>
   }
 
   renderSearchSizer = () => {
