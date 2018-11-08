@@ -28,7 +28,7 @@ import SearchCategory from './SearchCategory'
 import SearchResult from './SearchResult'
 import SearchResults from './SearchResults'
 
-const getIdOrTitle = (id, title) => (_.isNil(id) ? id : title)
+const getIdOrKey = (id, key) => (_.isNil(id) ? id : key)
 
 const debug = makeDebugger('search')
 
@@ -678,7 +678,7 @@ export default class Search extends Component {
       const defaultProps = {
         active: item === selectedLabel,
         as: 'a',
-        key: getIdOrTitle(item.id, item.title),
+        key: getIdOrKey(item.id, item.key),
         onClick: this.handleLabelClick,
         onRemove: this.handleLabelRemove,
         value: item,
