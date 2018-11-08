@@ -28,7 +28,7 @@ import SearchCategory from './SearchCategory'
 import SearchResult from './SearchResult'
 import SearchResults from './SearchResults'
 
-const getIdOrKey = (id, key) => (_.isNil(id) ? id : key)
+const getIdOrKey = (id, key) => (_.isNil(id) || _.isUndefined(id) ? key : id)
 
 const debug = makeDebugger('search')
 
@@ -381,9 +381,15 @@ export default class Search extends Component {
   }
 
   handleResultRemove = (e, result) => {
-    debug('handleResultRemove()')
+    const { selectedValue } = this.state
+    debug('handleResultRemove()', selectedValue, result)
+
     this.resetResultFlag(result, false)
-    const newSelectedValue = _.without(this.state.selectedValue, result)
+
+    const newSelectedValue = _.filter(
+      this.state.selectedValue,
+      v => getIdOrKey(v.id, v.title) !== getIdOrKey(result.id, result.title),
+    )
 
     _.invoke(this.props, 'onResultSelect', e, { ...this.props, selectedValue: newSelectedValue })
     this.setState({ selectedValue: newSelectedValue })
@@ -544,10 +550,10 @@ export default class Search extends Component {
   }
 
   handleLabelRemove = (e, labelProps) => {
-    debug('handleLabelRemove()')
+    debug('handleLabelRemove()', labelProps)
     // prevent focusing search input on click
     e.stopPropagation()
-    this.handleResultRemove(labelProps.value)
+    this.handleResultRemove(e, labelProps.value)
   }
 
   // ----------------------------------------
@@ -678,7 +684,7 @@ export default class Search extends Component {
       const defaultProps = {
         active: item === selectedLabel,
         as: 'a',
-        key: getIdOrKey(item.id, item.key),
+        key: getIdOrKey(item.id, item.title),
         onClick: this.handleLabelClick,
         onRemove: this.handleLabelRemove,
         value: item,
