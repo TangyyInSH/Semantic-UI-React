@@ -324,12 +324,18 @@ export default class Search extends Component {
     if (shouldClose) this.close(e)
   }
 
+  clearSearchQuery = () => {
+    debug('clearSearchQuery()')
+    this.setState({ value: '' })
+  }
+
   handleClose = () => {
     debug('handleClose()')
 
     const hasFocus = document.activeElement === this.ref
 
     this.ref.blur()
+    this.clearSearchQuery()
 
     this.setState({ focus: hasFocus })
   }
@@ -342,15 +348,18 @@ export default class Search extends Component {
     debug('handleResultSelect()')
     debug(result)
 
-    _.invoke(this.props, 'onResultSelect', e, { ...this.props, result })
-
     const { multiple } = this.props
-    if (!multiple) return
+    if (!multiple) {
+      _.invoke(this.props, 'onResultSelect', e, { ...this.props, result })
+      return
+    }
 
+    // multiple mode enable both add and remove, thus call 'onResultSelect'
+    // in handleResultRemove or handleResultAdd respectively
     if (result.selected) {
-      this.handleResultRemove(result)
+      this.handleResultRemove(e, result)
     } else {
-      this.handleResultAdd(result)
+      this.handleResultAdd(e, result)
     }
   }
 
@@ -362,25 +371,32 @@ export default class Search extends Component {
     this.setState({ results })
   }
 
-  handleResultAdd = (result) => {
+  handleResultAdd = (e, result) => {
     debug('handleResultAdd()')
     this.resetResultFlag(result, true)
     const newSelectedValue = _.union(this.state.selectedValue, [result])
+
+    _.invoke(this.props, 'onResultSelect', e, { ...this.props, selectedValue: newSelectedValue })
     this.setState({ selectedValue: newSelectedValue })
   }
 
-  handleResultRemove = (result) => {
+  handleResultRemove = (e, result) => {
     debug('handleResultRemove()')
     this.resetResultFlag(result, false)
     const newSelectedValue = _.without(this.state.selectedValue, result)
+
+    _.invoke(this.props, 'onResultSelect', e, { ...this.props, selectedValue: newSelectedValue })
     this.setState({ selectedValue: newSelectedValue })
   }
 
-  handleResultRemoveAll = () => {
+  handleResultRemoveAll = (e) => {
     debug('handleResultRemoveAll()')
     const { selectedValue } = this.state
     _.forEach(selectedValue, v => this.resetResultFlag(v, false))
-    this.setState({ selectedValue: [] })
+    const newSelectedValue = []
+
+    _.invoke(this.props, 'onResultSelect', e, { ...this.props, selectedValue: newSelectedValue })
+    this.setState({ selectedValue: newSelectedValue })
   }
 
   handleSelectionChange = (e) => {
