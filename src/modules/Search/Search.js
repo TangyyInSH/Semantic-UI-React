@@ -24,6 +24,7 @@ import {
 import Input from '../../elements/Input'
 import Label from '../../elements/Label'
 import Icon from '../../elements/Icon'
+import Loader from '../../elements/Loader'
 import SearchCategory from './SearchCategory'
 import SearchResult from './SearchResult'
 import SearchResults from './SearchResults'
@@ -656,11 +657,17 @@ export default class Search extends Component {
     const { icon, input } = this.props
     const { value } = this.state
 
+    let props = { icon, ...rest }
+    const { loading, ...rest2 } = rest
+    // do not render icon in multple mode, as the icon already rendered before
+    if (this.props.multiple) {
+      props = rest2
+    }
+
     return Input.create(input, {
       autoGenerateKey: false,
       defaultProps: {
-        ...rest,
-        icon,
+        ...props,
         input: { className: 'prompt', tabIndex: '0', autoComplete: 'off' },
         onChange: this.handleSearchChange,
         onClick: this.handleInputClick,
@@ -704,7 +711,7 @@ export default class Search extends Component {
       return
     }
 
-    return <Icon name='remove' onClick={this.handleResultRemoveAll} />
+    return <Icon circular name='remove' onClick={this.handleResultRemoveAll} size='small' />
   }
 
   renderNoResults = () => {
@@ -787,11 +794,11 @@ export default class Search extends Component {
     return <SearchResults className={resultsClasses}>{menuContent}</SearchResults>
   }
 
-  renderSearchSizer = () => {
-    const { multiple } = this.props
+  renderFrontSearchIcon = () => {
+    if (!this.props.multiple) return
 
-    if (!multiple) return null
-    return <span className='sizer' ref={this.handleSizerRef} />
+    if (this.props.loading) return <Loader active inline size='tiny' />
+    return <Icon name='search' />
   }
 
   computeSearchInputWidth = () => {
@@ -843,9 +850,10 @@ export default class Search extends Component {
         onMouseDown={this.handleMouseDown}
         ref={this.handleRef}
       >
+        {this.renderFrontSearchIcon()}
         {this.renderLabels()}
-        {this.renderRemoveButton()}
         {this.renderSearchInput(htmlInputProps)}
+        {this.renderRemoveButton()}
         {this.renderResultsMenu()}
       </ElementType>
     )
