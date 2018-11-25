@@ -711,7 +711,7 @@ export default class Search extends Component {
       return
     }
 
-    return <Icon circular name='remove' onClick={this.handleResultRemoveAll} size='small' />
+    return <Icon circular name='remove' onClick={this.handleResultRemoveAll} size='small' link />
   }
 
   renderNoResults = () => {
